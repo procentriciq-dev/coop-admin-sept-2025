@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { DashboardLayout } from "./components/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
+import Contributions from "./pages/Contributions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,14 @@ const App = () => (
             element={
               <DashboardLayout>
                 <Members />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/contributions"
+            element={
+              <DashboardLayout>
+                <Contributions />
               </DashboardLayout>
             }
           />
