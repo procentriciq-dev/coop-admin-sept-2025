@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { MetricCard } from "@/components/MetricCard";
+import { CreateMemberDialog } from "@/components/CreateMemberDialog";
+import { MemberFormDialog } from "@/components/MemberFormDialog";
+import { UploadDocumentDialog } from "@/components/UploadDocumentDialog";
+import { SendInviteDialog } from "@/components/SendInviteDialog";
 import {
   Users,
   UserCheck,
@@ -66,6 +70,21 @@ const members = [
 
 export default function Members() {
   const [showBanner, setShowBanner] = useState(true);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [formDialogOpen, setFormDialogOpen] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+
+  const handleSelectOption = (option: "form" | "upload" | "invite") => {
+    setCreateDialogOpen(false);
+    if (option === "form") {
+      setFormDialogOpen(true);
+    } else if (option === "upload") {
+      setUploadDialogOpen(true);
+    } else {
+      setInviteDialogOpen(true);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -145,7 +164,10 @@ export default function Members() {
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold">List of Members</h3>
           <div className="flex gap-2">
-            <Button className="bg-secondary text-secondary-foreground">
+            <Button
+              className="bg-secondary text-secondary-foreground"
+              onClick={() => setCreateDialogOpen(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add New Member
             </Button>
@@ -316,6 +338,24 @@ export default function Members() {
           </div>
         </div>
       </Card>
+
+      <CreateMemberDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSelectOption={handleSelectOption}
+      />
+      <MemberFormDialog
+        open={formDialogOpen}
+        onOpenChange={setFormDialogOpen}
+      />
+      <UploadDocumentDialog
+        open={uploadDialogOpen}
+        onOpenChange={setUploadDialogOpen}
+      />
+      <SendInviteDialog
+        open={inviteDialogOpen}
+        onOpenChange={setInviteDialogOpen}
+      />
     </div>
   );
 }
