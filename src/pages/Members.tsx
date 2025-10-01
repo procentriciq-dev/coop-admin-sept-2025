@@ -8,6 +8,10 @@ import { CreateMemberDialog } from "@/components/CreateMemberDialog";
 import { MemberFormDialog } from "@/components/MemberFormDialog";
 import { UploadDocumentDialog } from "@/components/UploadDocumentDialog";
 import { SendInviteDialog } from "@/components/SendInviteDialog";
+import { RolesDropdown } from "@/components/RolesDropdown";
+import { FilterDropdown } from "@/components/FilterDropdown";
+import { SortByDropdown } from "@/components/SortByDropdown";
+import { BulkActionDropdown } from "@/components/BulkActionDropdown";
 import {
   Users,
   UserCheck,
@@ -15,8 +19,6 @@ import {
   Plus,
   Upload,
   Search,
-  Filter,
-  ChevronDown,
   MoreHorizontal,
   X,
   MessageSquare,
@@ -239,16 +241,10 @@ export default function Members() {
             <Input placeholder="Search anything" className="pl-10" />
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
-            </Button>
-            <Button variant="outline" size="sm">
-              Sort By <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm">
-              Bulk Action <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
+            <RolesDropdown />
+            <FilterDropdown />
+            <SortByDropdown />
+            <BulkActionDropdown />
           </div>
         </div>
 
