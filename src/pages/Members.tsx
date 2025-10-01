@@ -162,50 +162,56 @@ export default function Members() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">
-                  Address *
+                  Address
                 </label>
                 <Input placeholder="Address" />
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">
-                  Government *
+                  Upload/Account
                 </label>
-                <Input placeholder="Government" />
+                <Input placeholder="Upload/Account" />
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">
-                  Sex *
+                  Send Invite
                 </label>
-                <Input placeholder="Sex" />
+                <Input placeholder="Send Invite" />
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">
-                  Firstname *
+                  First Name
                 </label>
-                <Input placeholder="Firstname" />
+                <Input placeholder="First Name" />
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">
-                  Last Name *
+                  Last Name
                 </label>
                 <Input placeholder="Last Name" />
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">
-                  Role Address *
+                  Email Address
                 </label>
-                <Input placeholder="Role Address" />
+                <Input placeholder="Email Address" />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1 block">
+                  Role
+                </label>
+                <Input placeholder="Role" />
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-4">
               <Button variant="outline" size="sm">
-                Next Form
+                Fill all Form
               </Button>
               <Button
                 size="sm"
                 className="bg-primary text-primary-foreground"
               >
-                Next
+                Save
               </Button>
             </div>
           </div>
@@ -232,16 +238,16 @@ export default function Members() {
 
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>
+            <TableRow className="bg-primary hover:bg-primary">
+              <TableHead className="text-primary-foreground">
                 <input type="checkbox" className="rounded" />
               </TableHead>
-              <TableHead>Membership ID</TableHead>
-              <TableHead>Full name</TableHead>
-              <TableHead>Roles</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead></TableHead>
+              <TableHead className="text-primary-foreground">Membership ID</TableHead>
+              <TableHead className="text-primary-foreground">Full name</TableHead>
+              <TableHead className="text-primary-foreground">Roles</TableHead>
+              <TableHead className="text-primary-foreground">Email</TableHead>
+              <TableHead className="text-primary-foreground">Status</TableHead>
+              <TableHead className="text-primary-foreground"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -295,12 +301,14 @@ export default function Members() {
           </TableBody>
         </Table>
 
-        <div className="flex items-center justify-center gap-2 mt-4">
-          <Button variant="outline" size="sm">
-            Show more
-          </Button>
-          <span className="text-sm text-muted-foreground">10 rows</span>
-          <div className="flex items-center gap-1 ml-4">
+        <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Show rows:</span>
+            <Button variant="outline" size="sm">
+              10 rows <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-1">
             <Button variant="outline" size="icon" className="h-8 w-8">
               1
             </Button>
