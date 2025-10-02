@@ -1,73 +1,80 @@
-# Welcome to your Lovable project
+# Tently Admin
 
-## Project info
+An admin dashboard built with React, Vite, TypeScript, Tailwind CSS, and shadcn/ui. It provides management views for members, contributions, invites, and dashboard metrics.
 
-**URL**: https://lovable.dev/projects/b3782cf0-6390-4139-982b-ff0aa0732d7a
+## Tech Stack
 
-## How can I edit this code?
+- Vite + React 18 (TypeScript)
+- Tailwind CSS (+ tailwind-merge, typography)
+- shadcn/ui (Radix UI primitives)
+- React Router v6
+- TanStack Query
+- Zod + React Hook Form
 
-There are several ways of editing your application.
+## Getting Started
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/b3782cf0-6390-4139-982b-ff0aa0732d7a) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Prerequisites: Node.js 18+ and npm.
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
+# Install dependencies
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start dev server (http://localhost:5173)
 npm run dev
+
+# Type-check and lint
+npm run lint
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-**Edit a file directly in GitHub**
+## Available Scripts
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- dev: Start Vite dev server
+- build: Production build
+- build:dev: Development-mode build (useful for debugging prod bundle)
+- preview: Preview the production build
+- lint: Run ESLint on the project
 
-**Use GitHub Codespaces**
+## Project Structure
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```
+src/
+  components/           # Reusable UI and app components (incl. shadcn/ui)
+  hooks/                # Custom hooks
+  lib/                  # Utilities (e.g., className helpers)
+  pages/                # Route-level pages
+  main.tsx              # App bootstrap
+  App.tsx               # Root layout/router mounting
+```
 
-## What technologies are used for this project?
+Key pages in `src/pages`:
 
-This project is built with:
+- Dashboard.tsx — overview metrics and charts
+- Members.tsx — members table, filters, bulk actions
+- Contributions.tsx — contributions overview
+- Index.tsx — default landing route
+- NotFound.tsx — fallback 404
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Notable components in `src/components`:
 
-## How can I deploy this project?
+- AppSidebar, DashboardLayout, MetricCard
+- Member management dialogs: CreateMemberDialog, MemberFormDialog, SendInviteDialog
+- UI primitives under `components/ui` (generated via shadcn/ui)
 
-Simply open [Lovable](https://lovable.dev/projects/b3782cf0-6390-4139-982b-ff0aa0732d7a) and click on Share -> Publish.
+## Styling & UI
 
-## Can I connect a custom domain to my Lovable project?
+Tailwind is configured in `tailwind.config.ts` and global styles in `src/index.css`. shadcn/ui components live under `src/components/ui` and rely on Radix primitives.
 
-Yes, you can!
+## Routing
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Client-side routing is handled by React Router (`react-router-dom`). See `App.tsx` for route mounting and `src/pages` for route components.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Notes
+
+- This project uses TanStack Query for data fetching/caching. Wire up real APIs in your page/components where needed.
+- Forms use React Hook Form with Zod validation via `@hookform/resolvers`.
