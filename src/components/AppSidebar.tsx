@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Users,
@@ -56,15 +57,47 @@ export function AppSidebar() {
   const isCollapsed = state === "collapsed";
   const { pathname } = useLocation();
 
+  const renderNavItem = (item: { title: string; url: string; icon: any }) => (
+    <SidebarMenuItem key={item.title}>
+      <SidebarMenuButton asChild>
+        <NavLink
+          to={item.url}
+          className={cn(
+            "flex items-center sidebar-item",
+            pathname === item.url ? "sidebar-item-active font-medium" : "text-sidebar-foreground",
+            isCollapsed ? "justify-center" : "justify-start"
+          )}
+        >
+          <item.icon className={cn(
+            "sidebar-icon transition-all duration-200",
+            isCollapsed ? "mx-auto h-5 w-5" : "h-4 w-4"
+          )} />
+          {!isCollapsed && <span className="sidebar-text ml-3">{item.title}</span>}
+        </NavLink>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarContent className="pt-2">
         <SidebarHeader>
-          <div className="px-2 flex items-center gap-2">
-            <img src="/favicon.ico" alt="Tently" className="w-8 h-8 rounded-lg" />
-            {!isCollapsed && (
-              <span className="font-bold text-xl text-foreground sidebar-text">tently</span>
-            )}
+          <div className={cn("flex items-center justify-center w-full py-3 overflow-hidden", !isCollapsed ? "px-4" : "px-2")}>
+            <div className="flex items-center">
+              {isCollapsed ? (
+                <img 
+                  src="/favicon.ico" 
+                  alt="Tently" 
+                  className="w-6 h-6 transition-all duration-200 flex-shrink-0"
+                />
+              ) : (
+                <img 
+                  src="/thelogo.png" 
+                  alt="Tently" 
+                  className="w-32 h-auto transition-all duration-200 flex-shrink-0"
+                />
+              )}
+            </div>
           </div>
           {!isCollapsed && (
             <button className="mx-2 mt-2 inline-flex w-[calc(100%-1rem)] items-center justify-between rounded-md border border-sidebar-border bg-card px-2 py-2 text-left">
@@ -80,17 +113,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem key={dashboardItem.title}>
-                <SidebarMenuButton asChild>
-                  <NavLink
-                    to={dashboardItem.url}
-                    className={`${pathname === dashboardItem.url ? "sidebar-item sidebar-item-active font-medium" : "sidebar-item text-sidebar-foreground"}`}
-                  >
-                    <dashboardItem.icon className="sidebar-icon" />
-                    {!isCollapsed && <span className="sidebar-text">{dashboardItem.title}</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {renderNavItem(dashboardItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -101,42 +124,18 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {coreItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className={`${pathname === item.url ? "sidebar-item sidebar-item-active font-medium" : "sidebar-item text-sidebar-foreground"}`}
-                    >
-                      <item.icon className="sidebar-icon" />
-                      {!isCollapsed && <span className="sidebar-text">{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {coreItems.map((item) => renderNavItem(item))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-muted-foreground text-xs uppercase sidebar-text">
-            {!isCollapsed && "Growth & Initiative"}
+            {!isCollapsed && "Growth & Community"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {growthItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className={`${pathname === item.url ? "sidebar-item sidebar-item-active font-medium" : "sidebar-item text-sidebar-foreground"}`}
-                    >
-                      <item.icon className="sidebar-icon" />
-                      {!isCollapsed && <span className="sidebar-text">{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {growthItems.map((item) => renderNavItem(item))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -147,53 +146,42 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {adminItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className={`${pathname === item.url ? "sidebar-item sidebar-item-active font-medium" : "sidebar-item text-sidebar-foreground"}`}
-                    >
-                      <item.icon className="sidebar-icon" />
-                      {!isCollapsed && <span className="sidebar-text">{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {adminItems.map((item) => renderNavItem(item))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarFooter>
           {!isCollapsed && (
-            <div className="mx-2 mt-2 rounded-lg bg-[#3a2468] p-4 text-white">
-              <div className="flex items-center gap-2 mb-2">
-                <img src="/favicon.ico" alt="tently" className="w-5 h-5" />
-                <span className="font-semibold sidebar-text">tently</span>
-              </div>
-              <p className="text-xs opacity-90 leading-snug sidebar-text" style={{ color: "#ffffff" }}>
-                Refer a friend and earn up to ₦1000 for first 3 people you invite
-              </p>
-              <button className="mt-3 w-full rounded-md bg-white px-3 py-2 text-xs font-medium text-[#3a2468] sidebar-text">
-                Copy Referral Link
-              </button>
+            <div className="mt-4 mb-6 flex justify-center">
+              <img 
+                src="/tently.png" 
+                alt="Tently" 
+                className="h-auto w-full max-w-[180px] mx-auto"
+              />
             </div>
           )}
           <div className="mt-2">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <NavLink to="/logout">
-                    <LogOut className="sidebar-icon" />
-                    {!isCollapsed && <span>Logout</span>}
+                  <NavLink to="/logout" className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-start")}>
+                    <LogOut className={cn(
+                      "sidebar-icon transition-all duration-200",
+                      isCollapsed ? "mx-auto h-5 w-5" : "h-4 w-4"
+                    )} />
+                    {!isCollapsed && <span className="ml-3">Logout</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <NavLink to="/setting">
-                    <Settings className="sidebar-icon" />
-                    {!isCollapsed && <span>Setting</span>}
+                  <NavLink to="/setting" className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-start")}>
+                    <Settings className={cn(
+                      "sidebar-icon transition-all duration-200",
+                      isCollapsed ? "mx-auto h-5 w-5" : "h-4 w-4"
+                    )} />
+                    {!isCollapsed && <span className="ml-3">Setting</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

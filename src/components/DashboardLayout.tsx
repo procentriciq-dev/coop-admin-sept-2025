@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Bell, Calendar, Search } from "lucide-react";
+import { Bell, Calendar, Search, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,12 +32,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Calendar className="h-5 w-5" />
               </Button>
               <Button variant="ghost" size="icon" className="relative">
+                <Mail className="h-5 w-5" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
+              </Button>
+              <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
               </Button>
               <div className="flex items-center gap-2 ml-2">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src="" />
+                  <AvatarImage src="/Avatar.png" alt="User Avatar" />
                   <AvatarFallback className="bg-primary text-primary-foreground">
                     JH
                   </AvatarFallback>
