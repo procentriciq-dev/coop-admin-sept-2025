@@ -314,7 +314,9 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold mb-1">Welcome {user?.email || 'User'} 👋</h1>
+            <h1 className="text-2xl font-bold mb-1">
+              Welcome {localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}').email || 'User' : 'User'} 👋
+            </h1>
             <p className="text-[12px] text-muted-foreground">Last login {formatLastLoginDate(new Date())}</p>
             <p className="mt-2 text-[12px] text-muted-foreground">Send , Save, Visit our marketplace, anytime.</p>
           </div>
