@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -174,6 +175,7 @@ const recentActivity = [
 ];
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("Contributions");
   const [activityTab, setActivityTab] = useState("Contributions");
   const [activitySearch, setActivitySearch] = useState("");
@@ -282,17 +284,29 @@ export default function Dashboard() {
     return () => clearInterval(id);
   }, []);
 
-  const formatHeaderDate = (d: Date) => {
-    const day = d.getDate().toString().padStart(2, '0');
+  const formatLastLoginDate = (d: Date) => {
+    const day = d.getDate();
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const mon = months[d.getMonth()];
-    const year = (d.getFullYear() % 100).toString().padStart(2, '0');
+    const year = d.getFullYear();
     let hours = d.getHours();
     const minutes = d.getMinutes().toString().padStart(2, '0');
     const ampm = hours >= 12 ? 'pm' : 'am';
     hours = hours % 12;
     if (hours === 0) hours = 12;
-    return `${day} ${mon}., ${year} | ${hours}:${minutes}${ampm}`;
+    
+    // Add the correct suffix to the day
+    const getDaySuffix = (day: number) => {
+      if (day > 3 && day < 21) return 'th';
+      switch (day % 10) {
+        case 1:  return 'st';
+        case 2:  return 'nd';
+        case 3:  return 'rd';
+        default: return 'th';
+      }
+    };
+    
+    return `${day}${getDaySuffix(day)} ${mon} ${year} • ${hours}:${minutes}${ampm}`;
   };
 
   return (
@@ -300,8 +314,8 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold mb-1">Welcome Jay Hargudson 👌🏽</h1>
-            <p className="text-[12px] text-muted-foreground">Last login 15th Sep 2025 • 09:47am</p>
+            <h1 className="text-2xl font-bold mb-1">Welcome {user?.email || 'User'} 👋</h1>
+            <p className="text-[12px] text-muted-foreground">Last login {formatLastLoginDate(new Date())}</p>
             <p className="mt-2 text-[12px] text-muted-foreground">Send , Save, Visit our marketplace, anytime.</p>
           </div>
           <Button variant="outline" className="h-9 px-4 hover:bg-[#1DD3B0] hover:text-white" onClick={() => window.location.assign('/data-import')}>
@@ -595,7 +609,7 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium sm:text-base">Recent Activity</h3>
                   <button className="inline-flex items-center text-xs sm:text-sm text-muted-foreground hover:text-foreground">
-                    {formatHeaderDate(now)}
+                    {formatLastLoginDate(now)}
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </button>
                 </div>

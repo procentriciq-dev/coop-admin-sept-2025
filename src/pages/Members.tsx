@@ -8,6 +8,7 @@ import { CreateMemberDialog } from "@/components/CreateMemberDialog";
 import { MemberFormDialog } from "@/components/MemberFormDialog";
 import { UploadDocumentDialog } from "@/components/UploadDocumentDialog";
 import { SendInviteDialog } from "@/components/SendInviteDialog";
+import { DeleteConfirmationDialog } from "@/components/DeleteConfirmationDialog";
 import { RolesDropdown } from "@/components/RolesDropdown";
 import { FilterDropdown } from "@/components/FilterDropdown";
 import { SortByDropdown } from "@/components/SortByDropdown";
@@ -18,6 +19,8 @@ import {
   UserX,
   Plus,
   Upload,
+  ChevronLeft,
+  ChevronRight,
   Search,
   MoreHorizontal,
   X,
@@ -50,38 +53,143 @@ import { useNavigate } from "react-router-dom";
 
 const initialMembers = [
   {
-    id: "SG2345672",
-    name: "Beliver Joseph",
+    id: "SG2345671",
+    name: "Alex Johnson",
     role: "Executive Coordinator",
-    email: "beliveraboseh3@gmail.com",
+    email: "alex.johnson@example.com",
     status: "active",
   },
   {
     id: "SG2345672",
-    name: "Beliver Joseph",
-    role: "Executive Coordinator",
-    email: "beliveraboseh3@gmail.com",
+    name: "Maria Garcia",
+    role: "Project Manager",
+    email: "maria.garcia@example.com",
     status: "deactivated",
   },
   {
-    id: "SG2345672",
-    name: "Beliver Joseph",
-    role: "Executive Coordinator",
-    email: "beliveraboseh3@gmail.com",
+    id: "SG2345673",
+    name: "James Wilson",
+    role: "Senior Developer",
+    email: "james.wilson@example.com",
     status: "pending",
   },
   {
-    id: "SG2345672",
-    name: "Beliver Joseph",
-    role: "Executive Coordinator",
-    email: "beliveraboseh3@gmail.com",
+    id: "SG2345674",
+    name: "Sarah Chen",
+    role: "Design Lead",
+    email: "sarah.chen@example.com",
     status: "active",
   },
   {
-    id: "SG2345672",
-    name: "Beliver Joseph",
-    role: "Executive Coordinator",
-    email: "beliveraboseh3@gmail.com",
+    id: "SG2345675",
+    name: "David Kim",
+    role: "QA Engineer",
+    email: "david.kim@example.com",
+    status: "new",
+  },
+  {
+    id: "SG2345676",
+    name: "Emma Davis",
+    role: "UX Designer",
+    email: "emma.davis@example.com",
+    status: "active",
+  },
+  {
+    id: "SG2345677",
+    name: "Michael Brown",
+    role: "DevOps Engineer",
+    email: "michael.brown@example.com",
+    status: "deactivated",
+  },
+  {
+    id: "SG2345678",
+    name: "Olivia Martinez",
+    role: "Product Owner",
+    email: "olivia.martinez@example.com",
+    status: "pending",
+  },
+  {
+    id: "SG2345679",
+    name: "William Taylor",
+    role: "Backend Developer",
+    email: "william.taylor@example.com",
+    status: "active",
+  },
+  {
+    id: "SG2345680",
+    name: "Sophia Anderson",
+    role: "Frontend Developer",
+    email: "sophia.anderson@example.com",
+    status: "new",
+  },
+  {
+    id: "SG2345681",
+    name: "Ethan Thomas",
+    role: "Data Scientist",
+    email: "ethan.thomas@example.com",
+    status: "active",
+  },
+  {
+    id: "SG2345682",
+    name: "Ava Jackson",
+    role: "Marketing Specialist",
+    email: "ava.jackson@example.com",
+    status: "deactivated",
+  },
+  {
+    id: "SG2345683",
+    name: "Noah White",
+    role: "System Administrator",
+    email: "noah.white@example.com",
+    status: "pending",
+  },
+  {
+    id: "SG2345684",
+    name: "Isabella Harris",
+    role: "Content Writer",
+    email: "isabella.harris@example.com",
+    status: "active",
+  },
+  {
+    id: "SG2345685",
+    name: "Liam Martin",
+    role: "Mobile Developer",
+    email: "liam.martin@example.com",
+    status: "new",
+  },
+  {
+    id: "SG2345686",
+    name: "Mia Thompson",
+    role: "UX Researcher",
+    email: "mia.thompson@example.com",
+    status: "active",
+  },
+  {
+    id: "SG2345687",
+    name: "Benjamin Garcia",
+    role: "Security Analyst",
+    email: "benjamin.garcia@example.com",
+    status: "deactivated",
+  },
+  {
+    id: "SG2345688",
+    name: "Charlotte Martinez",
+    role: "Product Manager",
+    email: "charlotte.martinez@example.com",
+    status: "pending",
+  },
+  {
+    id: "SG2345689",
+    name: "Elijah Robinson",
+    role: "Database Administrator",
+    email: "elijah.robinson@example.com",
+    status: "active",
+  },
+  {
+    id: "SG2345690",
+    name: "Amelia Clark",
+    role: "UI/UX Designer",
+    email: "amelia.clark@example.com",
     status: "new",
   },
 ];
@@ -93,6 +201,8 @@ export default function Members() {
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<string | null>(null);
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
 
@@ -124,6 +234,36 @@ export default function Members() {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     navigate(`/members/${crypto.randomUUID().slice(0,8)}`, { state: data });
+  };
+
+  const handleViewMember = (memberId: string) => {
+    navigate(`/members/${memberId}`);
+  };
+
+  const handleEditMember = (memberId: string) => {
+    setFormDialogOpen(true);
+    // Here you would typically load the member data into the form
+    // For example: setCurrentMember(members.find(m => m.id === memberId));
+  };
+
+  const handleDeleteClick = (memberId: string) => {
+    setMemberToDelete(memberId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!memberToDelete) return;
+    
+    setMembers(prev => prev.filter(member => member.id !== memberToDelete));
+    // Remove from selected members if it was selected
+    setSelectedMembers(prev => {
+      const newSelection = new Set(prev);
+      newSelection.delete(memberToDelete);
+      return newSelection;
+    });
+    
+    setDeleteDialogOpen(false);
+    setMemberToDelete(null);
   };
 
   // Controls: search, filters, sort, pagination
@@ -385,8 +525,8 @@ export default function Members() {
             </TableRow>
           </TableHeader>
             <TableBody>
-            {pageItems.map((member, index) => (
-                <TableRow key={index} className="bg-white">
+            {pageItems.map((member) => (
+                <TableRow key={member.id} className="bg-white">
                 <TableCell>
                   <input 
                     type="checkbox" 
@@ -416,28 +556,36 @@ export default function Members() {
                   )}
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-3 justify-end pr-2">
-                    <div className="flex items-center text-muted-foreground text-[12px] gap-1">
-                      <MessageSquare className="h-4 w-4" />
-                      <span>{index === 1 ? 2 : 0}</span>
-                    </div>
+                  <div className="flex items-center justify-end pr-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="hover:bg-transparent">
-                          <MoreHorizontal className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-transparent data-[state=open]:bg-transparent">
+                          <MoreHorizontal className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" sideOffset={6} className="w-40 p-2 rounded-lg">
                         <div className="text-[12px] text-muted-foreground px-2 pb-1">Menu actions</div>
-                        <DropdownMenuItem className="text-[13px] font-medium text-blue-700 hover:bg-transparent focus:bg-transparent">
+                        <DropdownMenuItem 
+                          className="text-[13px] font-medium text-blue-700 data-[highlighted]:bg-transparent data-[highlighted]:text-blue-700 cursor-pointer focus:bg-transparent"
+                          onClick={() => handleViewMember(member.id)}
+                        >
                           View All
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-[13px] font-medium text-emerald-600 hover:bg-transparent focus:bg-transparent">
+                        <DropdownMenuSeparator className="bg-gray-200 h-[1px] my-1" />
+                        <DropdownMenuItem 
+                          className="text-[13px] font-medium text-emerald-600 data-[highlighted]:bg-transparent data-[highlighted]:text-emerald-600 cursor-pointer focus:bg-transparent"
+                          onClick={() => handleEditMember(member.id)}
+                        >
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-[13px] font-medium text-rose-600 hover:bg-transparent focus:bg-transparent">
+                        <DropdownMenuSeparator className="bg-gray-200 h-[1px] my-1" />
+                        <DropdownMenuItem 
+                          className="text-[13px] font-medium text-rose-600 data-[highlighted]:bg-transparent data-[highlighted]:text-rose-600 cursor-pointer focus:bg-transparent"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleDeleteClick(member.id);
+                          }}
+                        >
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -449,17 +597,49 @@ export default function Members() {
           </TableBody>
             </Table>
 
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>Show rows:</span>
-                <select className="h-8 px-2 rounded-lg border text-[12px]" value={pageSize} onChange={(e)=>{setPageSize(parseInt(e.target.value,10)); setCurrentPage(1);}}>
-                  {[5,10,20,50].map(n=> (<option key={n} value={n}>{n} data</option>))}
-                </select>
-              </div>
+            <div className="flex items-center justify-between mt-6">
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" className="h-8 w-8" disabled={current===1} onClick={()=>setCurrentPage(p=>Math.max(1,p-1))}>◀</Button>
-                <span className="text-xs text-muted-foreground">Page {current} of {totalPages}</span>
-                <Button variant="outline" size="icon" className="h-8 w-8" disabled={current===totalPages} onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))}>▶</Button>
+                <span className="text-sm text-muted-foreground">Show rows:</span>
+                <select
+                  className="h-8 border rounded-md px-2 text-sm"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(parseInt(e.target.value, 10));
+                    setCurrentPage(1);
+                  }}
+                >
+                  {[5, 10, 20, 50].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-sm text-muted-foreground ml-2">
+                  Showing {start + 1}-{Math.min(start + pageSize, sortedMembers.length)} of {sortedMembers.length} results
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <span className="text-xs text-muted-foreground ml-2">Page {currentPage} of {totalPages}</span>
               </div>
             </div>
           </div>
@@ -482,6 +662,13 @@ export default function Members() {
       <SendInviteDialog
         open={inviteDialogOpen}
         onOpenChange={setInviteDialogOpen}
+      />
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="Delete Member"
+        description="Are you sure you want to delete this member? This action cannot be undone."
       />
     </div>
   );

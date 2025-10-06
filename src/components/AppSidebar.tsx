@@ -16,6 +16,7 @@ import {
   LogOut,
   Database,
 } from "lucide-react";
+import { LogoutButton } from "./LogoutButton";
 import {
   Sidebar,
   SidebarContent,
@@ -167,15 +168,19 @@ export function AppSidebar() {
           <div className="mt-2">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink to="/logout" className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-start")}>
-                    <LogOut className={cn(
-                      "sidebar-icon transition-all duration-200",
-                      isCollapsed ? "mx-auto h-5 w-5" : "h-4 w-4"
-                    )} />
-                    {!isCollapsed && <span className="ml-3">Logout</span>}
-                  </NavLink>
-                </SidebarMenuButton>
+                <LogoutButton 
+                  variant="ghost" 
+                  className={cn(
+                    "w-full justify-start h-9 px-2 py-1.5 text-sm font-normal hover:bg-transparent hover:text-foreground",
+                    isCollapsed ? "justify-center" : "justify-start"
+                  )}
+                >
+                  <LogOut className={cn(
+                    "sidebar-icon transition-all duration-200",
+                    isCollapsed ? "mx-auto h-5 w-5" : "h-4 w-4"
+                  )} />
+                  {!isCollapsed && <span className="ml-3">Logout</span>}
+                </LogoutButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
