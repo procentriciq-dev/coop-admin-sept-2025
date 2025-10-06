@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface MemberFormDialogProps {
   open: boolean;
@@ -26,6 +27,16 @@ export function MemberFormDialog({
   open,
   onOpenChange,
 }: MemberFormDialogProps) {
+  const navigate = useNavigate();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    onOpenChange(false);
+    navigate(`/members/${crypto.randomUUID().slice(0,8)}`, { state: data });
+  };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
@@ -35,7 +46,7 @@ export function MemberFormDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 mt-4">
+        <form className="space-y-6 mt-4" onSubmit={handleSubmit}>
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12 bg-primary">
               <AvatarFallback className="bg-primary text-primary-foreground">
@@ -54,54 +65,54 @@ export function MemberFormDialog({
               <Label htmlFor="firstName">
                 First Name <span className="text-destructive">*</span>
               </Label>
-              <Input id="firstName" placeholder="Enter your name" />
+              <Input id="firstName" name="firstName" placeholder="Enter your name" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="lastName">
                 Last Name <span className="text-destructive">*</span>
               </Label>
-              <Input id="lastName" placeholder="Enter your name" />
+              <Input id="lastName" name="lastName" placeholder="Enter your name" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">
                 Email Address <span className="text-destructive">*</span>
               </Label>
-              <Input id="email" type="email" placeholder="Enter your name" />
+              <Input id="email" name="email" type="email" placeholder="Enter your name" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" type="tel" placeholder="Enter your name" />
+              <Input id="phone" name="phone" type="tel" placeholder="Enter your name" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="role">
                 Role <span className="text-destructive">*</span>
               </Label>
-              <Select>
+              <Select name="role">
                 <SelectTrigger id="role">
                   <SelectValue placeholder="Enter your Role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="coordinator">
+                  <SelectItem value="Executive Coordinator">
                     Executive Coordinator
                   </SelectItem>
-                  <SelectItem value="member">Member</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="Member">Member</SelectItem>
+                  <SelectItem value="Admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="occupation">Occupation</Label>
-              <Input id="occupation" placeholder="Enter your name" />
+              <Input id="occupation" name="username" placeholder="Enter your name" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="gender">Gender</Label>
-              <Select>
+              <Select name="gender">
                 <SelectTrigger id="gender">
                   <SelectValue placeholder="Enter gender" />
                 </SelectTrigger>
@@ -115,19 +126,19 @@ export function MemberFormDialog({
 
             <div className="space-y-2">
               <Label htmlFor="country">Country</Label>
-              <Input id="country" placeholder="Enter your name" />
+              <Input id="country" name="country" placeholder="Enter your name" />
             </div>
 
             <div className="space-y-2 col-span-2">
               <Label htmlFor="state">State</Label>
-              <Input id="state" placeholder="Enter your name" />
+              <Input id="state" name="state" placeholder="Enter your name" />
             </div>
           </div>
 
-          <Button className="w-full bg-[#10b981] hover:bg-[#059669] text-white h-12">
+          <Button type="submit" className="w-full bg-[#10b981] hover:bg-[#059669] text-white h-12">
             Add Member
           </Button>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

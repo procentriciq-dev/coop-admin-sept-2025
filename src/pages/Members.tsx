@@ -32,8 +32,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
 
-const members = [
+const initialMembers = [
   {
     id: "SG2345672",
     name: "Beliver Joseph",
@@ -73,6 +88,7 @@ const members = [
 
 export default function Members() {
   const [showBanner, setShowBanner] = useState(true);
+  const [members, setMembers] = useState(initialMembers);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -100,6 +116,59 @@ export default function Members() {
     setSelectAll(newSelection.size === members.length);
   };
 
+  const navigate = useNavigate();
+
+  const handleQuickAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    navigate(`/members/${crypto.randomUUID().slice(0,8)}`, { state: data });
+  };
+
+  // Controls: search, filters, sort, pagination
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [filters, setFilters] = useState<Record<string, boolean>>({});
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const normalized = (s: string) => s.toLowerCase();
+
+  // Map FilterDropdown keys to status values in members list
+  const statusForFilter: Record<string, string> = {
+    active: "active",
+    suspended: "deactivated",
+    inactive: "pending",
+    "new-added": "new",
+  };
+
+  const filteredMembers = members.filter((m) => {
+    const matchesSearch =
+      !searchQuery ||
+      normalized(m.name).includes(normalized(searchQuery)) ||
+      normalized(m.id).includes(normalized(searchQuery));
+
+    const anyFilter = Object.values(filters).some(Boolean);
+    const matchesFilter = !anyFilter || Object.entries(filters).some(([key, val]) => val && m.status === statusForFilter[key]);
+
+    return matchesSearch && matchesFilter;
+  });
+
+  const sortedMembers = [...filteredMembers].sort((a, b) => {
+    if (sortBy === "name") return a.name.localeCompare(b.name);
+    if (sortBy === "id") return a.id.localeCompare(b.id);
+    if (sortBy === "status") return a.status.localeCompare(b.status);
+    if (sortBy === "role") return a.role.localeCompare(b.role);
+    return 0;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(sortedMembers.length / pageSize));
+  const current = Math.min(currentPage, totalPages);
+  const start = (current - 1) * pageSize;
+  const pageItems = sortedMembers.slice(start, start + pageSize);
+
   const handleSelectOption = (option: "form" | "upload" | "invite") => {
     setCreateDialogOpen(false);
     if (option === "form") {
@@ -117,7 +186,7 @@ export default function Members() {
       <div className="flex items-center justify-between">
         <div className="text-xs text-muted-foreground">Core Management &gt; <span className="text-foreground">Members</span></div>
         <div className="flex items-center gap-2">
-          <Button className="h-12 w-[226px] bg-[#1DD3B0] hover:bg-[#13b99b] text-[#3C1642] rounded-lg flex items-center justify-center gap-[10px]">
+          <Button className="h-12 w-[226px] bg-[#1DD3B0] hover:bg-[#13b99b] text-[#3C1642] rounded-lg flex items-center justify-center gap-[10px]" onClick={() => setCreateDialogOpen(true)}>
             <Plus className="h-4 w-4 text-[#3C1642]" />
             Add New Member
           </Button>
@@ -168,7 +237,7 @@ export default function Members() {
               <ul className="list-disc pl-4 text-[12px] text-foreground mb-3">
                 <li>Add a member using the form, Excel upload, or invite option.</li>
               </ul>
-              <Button className="h-8 px-3 rounded-md bg-[#1DD3B0] hover:bg-[#13b99b] text-white text-[12px]">
+              <Button className="h-8 px-3 rounded-md bg-[#1DD3B0] hover:bg-[#13b99b] text-white text-[12px]" onClick={() => setCreateDialogOpen(true)}>
                 Create New Member
               </Button>
             </div>
@@ -221,12 +290,12 @@ export default function Members() {
             <p className="text-[11px] text-muted-foreground leading-tight">Manage your Member</p>
           </div>
           <div className="relative flex-1 min-w-[240px] max-w-xl">
-            <Input placeholder="Search" className="pl-3 pr-8 h-[40px] rounded-[10px] bg-white" />
+            <Input placeholder="Search" value={searchQuery} onChange={(e)=>{setSearchQuery(e.target.value); setCurrentPage(1);}} className="pl-3 pr-8 h-[40px] rounded-[10px] bg-white" />
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           </div>
           <div className="flex gap-3 ml-auto">
-            <FilterDropdown />
-            <SortByDropdown />
+            <FilterDropdown value={filters} onChange={(v)=>{setFilters(v); setCurrentPage(1);}} />
+            <SortByDropdown value={sortBy} onChange={(v)=>{setSortBy(v); setCurrentPage(1);}} onDateRangeChange={setDateRange} />
             <BulkActionDropdown />
           </div>
         </div>
@@ -234,7 +303,7 @@ export default function Members() {
         {/* Main content grid: left mini form, right table */}
         <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4">
           {/* Left panel mini form */}
-          <div className="border rounded-2xl p-3 h-max bg-white shadow-sm">
+          <form className="border rounded-2xl p-3 h-max bg-white shadow-sm" onSubmit={handleQuickAddSubmit}>
             <div className="pb-2 mb-2 border-b">
               <h4 className="text-sm font-medium">Add New Member</h4>
             </div>
@@ -255,29 +324,40 @@ export default function Members() {
             <div className="space-y-3">
               <div>
                 <p className="text-[11px] text-muted-foreground mb-1">First Name <span className="text-rose-500">*</span></p>
-                <Input placeholder="Enter your name" className="h-9 rounded-md" />
+                <Input name="firstName" placeholder="Enter your name" className="h-9 rounded-md" />
               </div>
               <div>
                 <p className="text-[11px] text-muted-foreground mb-1">Last Name <span className="text-rose-500">*</span></p>
-                <Input placeholder="Enter Phone Number" className="h-9 rounded-md" />
+                <Input name="lastName" placeholder="Enter Phone Number" className="h-9 rounded-md" />
               </div>
               <div>
                 <p className="text-[11px] text-muted-foreground mb-1">Email Address <span className="text-rose-500">*</span></p>
-                <Input placeholder="Enter email address" className="h-9 rounded-md" />
+                <Input name="email" placeholder="Enter email address" className="h-9 rounded-md" />
               </div>
               <div>
                 <p className="text-[11px] text-muted-foreground mb-1">Role <span className="text-rose-500">*</span></p>
-                <div className="relative">
-                  <Input placeholder="Select role" className="h-9 pr-8 rounded-md" />
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">▾</span>
-                </div>
+                <Select name="role">
+                  <SelectTrigger className="h-9 rounded-md">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="General Assembly">General Assembly</SelectItem>
+                    <SelectItem value="Board of Directors (BOD)">Board of Directors (BOD)</SelectItem>
+                    <SelectItem value="President">President</SelectItem>
+                    <SelectItem value="Vice-President">Vice-President</SelectItem>
+                    <SelectItem value="Secretary">Secretary</SelectItem>
+                    <SelectItem value="Assistant Secretary">Assistant Secretary</SelectItem>
+                    <SelectItem value="Treasurer">Treasurer</SelectItem>
+                    <SelectItem value="Assistant Treasurer">Assistant Treasurer</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="flex items-center justify-between gap-2 mt-3">
               <Button variant="outline" size="sm" className="rounded-full px-4">Fill Full Form</Button>
-              <Button size="sm" className="rounded-full px-6 bg-[#3C1642] hover:bg-[#2b1131] text-white">Save</Button>
+              <Button type="submit" size="sm" className="rounded-full px-6 bg-[#3C1642] hover:bg-[#2b1131] text-white">Save</Button>
             </div>
-          </div>
+          </form>
 
           {/* Right: controls + table */}
           <div>
@@ -305,7 +385,7 @@ export default function Members() {
             </TableRow>
           </TableHeader>
             <TableBody>
-            {members.map((member, index) => (
+            {pageItems.map((member, index) => (
                 <TableRow key={index} className="bg-white">
                 <TableCell>
                   <input 
@@ -341,9 +421,27 @@ export default function Members() {
                       <MessageSquare className="h-4 w-4" />
                       <span>{index === 1 ? 2 : 0}</span>
                     </div>
-                    <Button variant="ghost" size="icon" className="hover:bg-transparent">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="hover:bg-transparent">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" sideOffset={6} className="w-40 p-2 rounded-lg">
+                        <div className="text-[12px] text-muted-foreground px-2 pb-1">Menu actions</div>
+                        <DropdownMenuItem className="text-[13px] font-medium text-blue-700 hover:bg-transparent focus:bg-transparent">
+                          View All
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-[13px] font-medium text-emerald-600 hover:bg-transparent focus:bg-transparent">
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-[13px] font-medium text-rose-600 hover:bg-transparent focus:bg-transparent">
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </TableCell>
               </TableRow>
@@ -354,14 +452,14 @@ export default function Members() {
             <div className="flex items-center justify-between mt-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>Show rows:</span>
-                <button className="h-8 px-2 rounded-lg border text-[12px]">10 data ▾</button>
+                <select className="h-8 px-2 rounded-lg border text-[12px]" value={pageSize} onChange={(e)=>{setPageSize(parseInt(e.target.value,10)); setCurrentPage(1);}}>
+                  {[5,10,20,50].map(n=> (<option key={n} value={n}>{n} data</option>))}
+                </select>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" className="h-8 w-8">◀</Button>
-                <Button variant="outline" size="icon" className="h-8 w-8 bg-[#3C1642] text-white">1</Button>
-                <Button variant="outline" size="icon" className="h-8 w-8">2</Button>
-                <Button variant="outline" size="icon" className="h-8 w-8">…</Button>
-                <Button variant="outline" size="icon" className="h-8 w-8">▶</Button>
+                <Button variant="outline" size="icon" className="h-8 w-8" disabled={current===1} onClick={()=>setCurrentPage(p=>Math.max(1,p-1))}>◀</Button>
+                <span className="text-xs text-muted-foreground">Page {current} of {totalPages}</span>
+                <Button variant="outline" size="icon" className="h-8 w-8" disabled={current===totalPages} onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))}>▶</Button>
               </div>
             </div>
           </div>
