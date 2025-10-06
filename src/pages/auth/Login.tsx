@@ -173,6 +173,7 @@ export default function Login() {
                   onCheckedChange={(checked) =>
                     setFormData(prev => ({ ...prev, rememberMe: !!checked }))
                   }
+                  className="border-[#1DD3B0] data-[state=checked]:bg-[#1DD3B0] data-[state=checked]:text-white"
                 />
                 <label
                   htmlFor="rememberMe"
