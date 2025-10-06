@@ -75,11 +75,11 @@ export function SortByDropdown({ value, onChange, onDateRangeChange }: SortByDro
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="hover:bg-transparent hover:text-current">
           Sort By <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-4 bg-background z-50" align="start">
+      <PopoverContent className="w-72 p-4 bg-background z-50 rounded-lg shadow-lg border" align="start" sideOffset={8}>
         <div className="space-y-4">
           <h4 className="font-medium text-sm text-muted-foreground">Sort By</h4>
           
@@ -104,13 +104,14 @@ export function SortByDropdown({ value, onChange, onDateRangeChange }: SortByDro
                     </div>
                     
                     {option.id === "date" && showDateSubmenu && (
-                      <div className="ml-6 mt-3 space-y-2 border-l-2 border-border pl-4">
+                      <div className="ml-6 mt-3 space-y-2 border-l border-border pl-4">
                         {dateRanges.map((range) => (
                           <div
                             key={range.id}
                             className={cn(
-                              "flex items-center justify-between py-1 px-2 rounded cursor-pointer hover:bg-accent",
-                              selectedDateRange === range.id && "bg-accent"
+                              "flex items-center justify-between py-2 px-3 cursor-pointer border",
+                              range.id === "custom" ? "rounded-none" : "rounded-md",
+                              selectedDateRange === range.id && "bg-accent border-transparent"
                             )}
                             onClick={() => handleDateRangeSelect(range.id)}
                           >
@@ -141,31 +142,40 @@ export function SortByDropdown({ value, onChange, onDateRangeChange }: SortByDro
               </div>
             </RadioGroup>
           ) : (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">
-                  Input field
-                </Label>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Input field</Label>
                 <div className="relative">
-                  <Input className="pr-10" />
-                  <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
+                  <Input className="h-8 pr-8 text-sm" />
+                  <CalendarIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
                 </div>
               </div>
-              
-              <Calendar
-                mode="range"
-                selected={dateRange}
-                onSelect={(range: any) => {
-                  setDateRange(range);
-                  onDateRangeChange?.(range);
-                }}
-                className="rounded-md border pointer-events-auto"
-              />
-              
+
+              <div className="rounded-md border p-2">
+                <Calendar
+                  mode="range"
+                  selected={dateRange}
+                  onSelect={(range: any) => {
+                    setDateRange(range);
+                    onDateRangeChange?.(range);
+                  }}
+                  className="rounded-md"
+                  classNames={{
+                    table: "w-full border-collapse space-y-0",
+                    row: "flex w-full mt-1",
+                    head_cell: "text-muted-foreground rounded w-7 font-normal text-[10px]",
+                    cell: "h-7 w-7 text-center text-[12px] p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
+                    day: "h-7 w-7 p-0 font-normal",
+                    caption_label: "text-xs font-medium",
+                    months: "flex flex-col",
+                  }}
+                />
+              </div>
+
               <div className="flex gap-2">
                 <Button
                   variant="ghost"
-                  className="flex-1 text-destructive hover:text-destructive"
+                  className="h-8 flex-1 text-destructive hover:text-destructive"
                   onClick={() => {
                     setShowCalendar(false);
                     setDateRange({ from: undefined, to: undefined });
@@ -175,7 +185,7 @@ export function SortByDropdown({ value, onChange, onDateRangeChange }: SortByDro
                   REMOVE
                 </Button>
                 <Button
-                  className="flex-1 bg-[#10b981] hover:bg-[#059669] text-white"
+                  className="h-8 flex-1 bg-[#10b981] hover:bg-[#059669] text-white"
                   onClick={() => setShowCalendar(false)}
                 >
                   DONE

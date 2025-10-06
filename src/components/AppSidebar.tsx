@@ -101,9 +101,12 @@ export function AppSidebar() {
           </div>
           {!isCollapsed && (
             <button className="mx-2 mt-2 inline-flex w-[calc(100%-1rem)] items-center justify-between rounded-md border border-sidebar-border bg-card px-2 py-2 text-left">
-              <div className="flex flex-col">
-                <span className="text-sm font-medium sidebar-text">OmniCorp</span>
-                <span className="text-[10px] text-muted-foreground sidebar-text">Grow Business Plan</span>
+              <div className="flex items-center gap-2">
+                <img src="/omini.png" alt="OmniCorp" className="h-5 w-5" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium sidebar-text">OmniCorp</span>
+                  <span className="text-[10px] text-muted-foreground sidebar-text">Grow Business Plan</span>
+                </div>
               </div>
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </button>

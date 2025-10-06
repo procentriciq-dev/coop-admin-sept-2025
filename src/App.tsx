@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
 import Contributions from "./pages/Contributions";
 import NotFound from "./pages/NotFound";
+import DataImport from "./pages/DataImport";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,14 @@ const App = () => (
             element={
               <DashboardLayout>
                 <Contributions />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/data-import"
+            element={
+              <DashboardLayout>
+                <DataImport />
               </DashboardLayout>
             }
           />

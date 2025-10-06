@@ -42,7 +42,7 @@ export function FilterDropdown({ value, onChange }: FilterDropdownProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="hover:bg-transparent hover:text-current">
           <Filter className="h-4 w-4 mr-2" />
           Filters
         </Button>

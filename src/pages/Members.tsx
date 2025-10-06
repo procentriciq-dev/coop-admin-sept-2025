@@ -22,6 +22,7 @@ import {
   MoreHorizontal,
   X,
   MessageSquare,
+  Check,
 } from "lucide-react";
 import {
   Table,
@@ -76,6 +77,28 @@ export default function Members() {
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
+  const [selectAll, setSelectAll] = useState(false);
+
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedMembers(new Set());
+    } else {
+      setSelectedMembers(new Set(members.map(member => member.id)));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const toggleMemberSelection = (memberId: string) => {
+    const newSelection = new Set(selectedMembers);
+    if (newSelection.has(memberId)) {
+      newSelection.delete(memberId);
+    } else {
+      newSelection.add(memberId);
+    }
+    setSelectedMembers(newSelection);
+    setSelectAll(newSelection.size === members.length);
+  };
 
   const handleSelectOption = (option: "form" | "upload" | "invite") => {
     setCreateDialogOpen(false);
@@ -90,38 +113,66 @@ export default function Members() {
 
   return (
     <div className="space-y-6">
+      {/* Top bar actions */}
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-muted-foreground">Core Management &gt; <span className="text-foreground">Members</span></div>
+        <div className="flex items-center gap-2">
+          <Button className="h-12 w-[226px] bg-[#1DD3B0] hover:bg-[#13b99b] text-[#3C1642] rounded-lg flex items-center justify-center gap-[10px]">
+            <Plus className="h-4 w-4 text-[#3C1642]" />
+            Add New Member
+          </Button>
+          <Button
+            className="h-[47px] w-[112px] rounded-[10px] bg-transparent border border-[#525252] text-[#525252] hover:bg-transparent hover:border-[#525252]"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+        </div>
+      </div>
       {showBanner && (
-        <Card className="p-6 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20 relative">
+        <Card className="p-6 bg-[#E2E8F045] border border-border relative">
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-2"
+            className="absolute top-2 right-2 hover:bg-transparent"
             onClick={() => setShowBanner(false)}
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4 text-muted-foreground" />
           </Button>
-          <h2 className="text-xl font-bold mb-2">
-            Let's Start your Journey with Tently Members Page
+          <h2 className="text-[16px] font-semibold mb-1">
+            Let's Start your journey with Tently Members Page
           </h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Add and manage members to get started your cooperative community
+          <p className="text-[12px] text-muted-foreground mb-4">
+            Add and manage members to start building your cooperative community.
           </p>
-          <ul className="space-y-2 text-sm mb-4">
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Manage Members Document</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>
-                Add a member using the form, Excel upload, or camera (if
-                available)
-              </span>
-            </li>
-          </ul>
-          <Button className="bg-primary text-primary-foreground">
-            Watch the video
-          </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+            {/* Left checklist */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-[#3C1642] bg-white">
+                  <Check className="h-3 w-3 text-[#3C1642]" />
+                </span>
+                <span className="text-[12px] font-medium text-foreground">Add Your First Member</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-muted bg-white">
+                  <Check className="h-3 w-3 text-muted-foreground" />
+                </span>
+                <span className="text-[12px] text-muted-foreground">Review Member Requests</span>
+              </div>
+            </div>
+
+            {/* Right instructions */}
+            <div>
+              <p className="text-[12px] font-medium mb-1">Add Your First Member</p>
+              <ul className="list-disc pl-4 text-[12px] text-foreground mb-3">
+                <li>Add a member using the form, Excel upload, or invite option.</li>
+              </ul>
+              <Button className="h-8 px-3 rounded-md bg-[#1DD3B0] hover:bg-[#13b99b] text-white text-[12px]">
+                Create New Member
+              </Button>
+            </div>
+          </div>
         </Card>
       )}
 
@@ -129,7 +180,7 @@ export default function Members() {
         <h1 className="text-2xl font-bold mb-1">Today's Member</h1>
         <div className="flex gap-4 text-sm">
           <button className="text-primary font-medium">
-            Matthiew Summary
+            Member Summary
           </button>
           <button className="text-muted-foreground">5 Days</button>
         </div>
@@ -162,111 +213,107 @@ export default function Members() {
         />
       </div>
 
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold">List of Members</h3>
-          <div className="flex gap-2">
-            <Button
-              className="bg-secondary text-secondary-foreground"
-              onClick={() => setCreateDialogOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add New Member
-            </Button>
-            <Button variant="outline">
-              <Upload className="h-4 w-4 mr-2" />
-              Export
-            </Button>
+      <Card className="p-4 md:p-6">
+        {/* Top row: title + search + actions */}
+        <div className="mb-4 flex items-center gap-4 flex-wrap">
+          <div className="min-w-[160px]">
+            <h3 className="text-sm font-semibold leading-tight">List of Members</h3>
+            <p className="text-[11px] text-muted-foreground leading-tight">Manage your Member</p>
           </div>
-        </div>
-
-        <div className="mb-6">
-          <div className="bg-muted/30 p-4 rounded-lg">
-            <h4 className="font-medium mb-2">Add New Member</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">
-                  Address *
-                </label>
-                <Input placeholder="Address" />
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">
-                  Government *
-                </label>
-                <Input placeholder="Government" />
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">
-                  Sex *
-                </label>
-                <Input placeholder="Sex" />
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">
-                  Firstname *
-                </label>
-                <Input placeholder="Firstname" />
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">
-                  Last Name *
-                </label>
-                <Input placeholder="Last Name" />
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">
-                  Role Address *
-                </label>
-                <Input placeholder="Role Address" />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" size="sm">
-                Next Form
-              </Button>
-              <Button
-                size="sm"
-                className="bg-primary text-primary-foreground"
-              >
-                Next
-              </Button>
-            </div>
+          <div className="relative flex-1 min-w-[240px] max-w-xl">
+            <Input placeholder="Search" className="pl-3 pr-8 h-[40px] rounded-[10px] bg-white" />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           </div>
-        </div>
-
-        <div className="flex items-center justify-between mb-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search anything" className="pl-10" />
-          </div>
-          <div className="flex gap-2">
-            <RolesDropdown />
+          <div className="flex gap-3 ml-auto">
             <FilterDropdown />
             <SortByDropdown />
             <BulkActionDropdown />
           </div>
         </div>
 
-        <Table>
+        {/* Main content grid: left mini form, right table */}
+        <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4">
+          {/* Left panel mini form */}
+          <div className="border rounded-2xl p-3 h-max bg-white shadow-sm">
+            <div className="pb-2 mb-2 border-b">
+              <h4 className="text-sm font-medium">Add New Member</h4>
+            </div>
+            <div className="space-y-2 mb-3">
+              <div className="flex items-center justify-between text-[12px]">
+                <span className="text-foreground">Add Form</span>
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-md border text-muted-foreground">+</span>
+              </div>
+              <div className="flex items-center justify-between text-[12px]">
+                <span className="text-foreground">Upload Document</span>
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-md border text-muted-foreground">+</span>
+              </div>
+              <div className="flex items-center justify-between text-[12px]">
+                <span className="text-foreground">Send Invite</span>
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-md border text-muted-foreground">+</span>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <p className="text-[11px] text-muted-foreground mb-1">First Name <span className="text-rose-500">*</span></p>
+                <Input placeholder="Enter your name" className="h-9 rounded-md" />
+              </div>
+              <div>
+                <p className="text-[11px] text-muted-foreground mb-1">Last Name <span className="text-rose-500">*</span></p>
+                <Input placeholder="Enter Phone Number" className="h-9 rounded-md" />
+              </div>
+              <div>
+                <p className="text-[11px] text-muted-foreground mb-1">Email Address <span className="text-rose-500">*</span></p>
+                <Input placeholder="Enter email address" className="h-9 rounded-md" />
+              </div>
+              <div>
+                <p className="text-[11px] text-muted-foreground mb-1">Role <span className="text-rose-500">*</span></p>
+                <div className="relative">
+                  <Input placeholder="Select role" className="h-9 pr-8 rounded-md" />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">▾</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-2 mt-3">
+              <Button variant="outline" size="sm" className="rounded-full px-4">Fill Full Form</Button>
+              <Button size="sm" className="rounded-full px-6 bg-[#3C1642] hover:bg-[#2b1131] text-white">Save</Button>
+            </div>
+          </div>
+
+          {/* Right: controls + table */}
+          <div>
+            
+
+            <Table className="rounded-lg overflow-hidden">
           <TableHeader>
-            <TableRow>
-              <TableHead>
-                <input type="checkbox" className="rounded" />
+            <TableRow className="bg-[#3C1642] hover:bg-[#3C1642] h-16">
+              <TableHead className="text-white w-12">
+                <div className="flex items-center h-full">
+                  <input 
+                    type="checkbox" 
+                    className="h-4 w-4 rounded border-gray-300 ml-4"
+                    checked={selectAll}
+                    onChange={toggleSelectAll}
+                  />
+                </div>
               </TableHead>
-              <TableHead>Membership ID</TableHead>
-              <TableHead>Full name</TableHead>
-              <TableHead>Roles</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead></TableHead>
+              <TableHead className="text-white whitespace-nowrap">Membership ID</TableHead>
+              <TableHead className="text-white">Full name</TableHead>
+              <TableHead className="text-white">Roles</TableHead>
+              <TableHead className="text-white">Email</TableHead>
+              <TableHead className="text-white">Status</TableHead>
+              <TableHead className="w-10"></TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+            <TableBody>
             {members.map((member, index) => (
-              <TableRow key={index}>
+                <TableRow key={index} className="bg-white">
                 <TableCell>
-                  <input type="checkbox" className="rounded" />
+                  <input 
+                    type="checkbox" 
+                    className="h-4 w-4 rounded border-gray-300 ml-4"
+                    checked={selectedMembers.has(member.id)}
+                    onChange={() => toggleMemberSelection(member.id)}
+                  />
                 </TableCell>
                 <TableCell className="font-medium">{member.id}</TableCell>
                 <TableCell>{member.name}</TableCell>
@@ -275,35 +322,26 @@ export default function Members() {
                   {member.email}
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant={
-                      member.status === "active"
-                        ? "default"
-                        : member.status === "pending"
-                        ? "secondary"
-                        : member.status === "new"
-                        ? "outline"
-                        : "destructive"
-                    }
-                    className={
-                      member.status === "active"
-                        ? "bg-success/10 text-success border-success/20"
-                        : member.status === "pending"
-                        ? "bg-warning/10 text-warning border-warning/20"
-                        : member.status === "new"
-                        ? "bg-primary/10 text-primary border-primary/20"
-                        : ""
-                    }
-                  >
-                    {member.status}
-                  </Badge>
+                  {member.status === "active" && (
+                    <span className="px-3 py-1 rounded-[8px] text-[12px] bg-emerald-100 text-emerald-700">Active</span>
+                  )}
+                  {member.status === "deactivated" && (
+                    <span className="px-3 py-1 rounded-[8px] text-[12px] bg-gray-100 text-gray-600">Suspended</span>
+                  )}
+                  {member.status === "pending" && (
+                    <span className="px-3 py-1 rounded-[8px] text-[12px] bg-orange-100 text-orange-700">Inactive</span>
+                  )}
+                  {member.status === "new" && (
+                    <span className="px-3 py-1 rounded-[8px] text-[12px] bg-violet-100 text-violet-700">New</span>
+                  )}
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon">
+                  <div className="flex items-center gap-3 justify-end pr-2">
+                    <div className="flex items-center text-muted-foreground text-[12px] gap-1">
                       <MessageSquare className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon">
+                      <span>{index === 1 ? 2 : 0}</span>
+                    </div>
+                    <Button variant="ghost" size="icon" className="hover:bg-transparent">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </div>
@@ -311,26 +349,21 @@ export default function Members() {
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+            </Table>
 
-        <div className="flex items-center justify-center gap-2 mt-4">
-          <Button variant="outline" size="sm">
-            Show more
-          </Button>
-          <span className="text-sm text-muted-foreground">10 rows</span>
-          <div className="flex items-center gap-1 ml-4">
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              1
-            </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              2
-            </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              ...
-            </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              →
-            </Button>
+            <div className="flex items-center justify-between mt-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Show rows:</span>
+                <button className="h-8 px-2 rounded-lg border text-[12px]">10 data ▾</button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" className="h-8 w-8">◀</Button>
+                <Button variant="outline" size="icon" className="h-8 w-8 bg-[#3C1642] text-white">1</Button>
+                <Button variant="outline" size="icon" className="h-8 w-8">2</Button>
+                <Button variant="outline" size="icon" className="h-8 w-8">…</Button>
+                <Button variant="outline" size="icon" className="h-8 w-8">▶</Button>
+              </div>
+            </div>
           </div>
         </div>
       </Card>

@@ -20,31 +20,33 @@ export function MetricCard({
   iconBgColor,
 }: MetricCardProps) {
   return (
-    <Card className="p-6 hover:shadow-lg transition-shadow">
+    <Card className="p-5 border rounded-[8px] shadow-sm">
       <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm text-muted-foreground mb-1">{title}</p>
-          <p className="text-2xl font-bold mb-2">{value}</p>
+        <div
+          className={cn(
+            "w-9 h-9 rounded-full flex items-center justify-center shadow-sm",
+            iconBgColor
+          )}
+        >
+          {icon}
+        </div>
+      </div>
+      <div className="mt-6">
+        <p className="text-[12px] text-muted-foreground mb-2">{title}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-[22px] leading-none font-semibold">{value}</p>
           {change && (
             <span
               className={cn(
-                "text-xs font-medium px-2 py-1 rounded",
+                "text-[10px] font-medium px-2 py-[2px] rounded-full",
                 changeType === "positive"
-                  ? "bg-success/10 text-success"
-                  : "bg-destructive/10 text-destructive"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-orange-100 text-orange-700"
               )}
             >
               {change}
             </span>
           )}
-        </div>
-        <div
-          className={cn(
-            "w-12 h-12 rounded-lg flex items-center justify-center",
-            iconBgColor
-          )}
-        >
-          {icon}
         </div>
       </div>
     </Card>

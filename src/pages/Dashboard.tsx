@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Wallet,
   Users,
   Banknote,
@@ -14,17 +15,20 @@ import { Wallet,
   Search,
   ChevronLeft,
   ChevronRight,
+  Eye,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import {
   LineChart,
   Line,
-  AreaChart,
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
+  ReferenceDot,
 } from "recharts";
 import {
   Table,
@@ -34,6 +38,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { SortByDropdown } from "@/components/SortByDropdown";
 import { FilterDropdown } from "@/components/FilterDropdown";
@@ -164,6 +175,9 @@ const recentActivity = [
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Contributions");
+  const [activityTab, setActivityTab] = useState("Contributions");
+  const [activitySearch, setActivitySearch] = useState("");
+  const [now, setNow] = useState<Date>(new Date());
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -185,6 +199,12 @@ export default function Dashboard() {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
+
+  const formatNaira = (value: number) => {
+    if (!Number.isFinite(value)) return "";
+    const rounded = Math.round(value / 1000) * 1000; // keep nice steps
+    return `₦${rounded.toLocaleString()}`;
+  };
 
   const handleMonthChange = (month) => {
     setSelectedMonth(month);
@@ -256,6 +276,25 @@ export default function Dashboard() {
     setSelectedRows([]);
   }, [currentPage]);
 
+  // keep the header date/time live (update every minute)
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const formatHeaderDate = (d: Date) => {
+    const day = d.getDate().toString().padStart(2, '0');
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const mon = months[d.getMonth()];
+    const year = (d.getFullYear() % 100).toString().padStart(2, '0');
+    let hours = d.getHours();
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    return `${day} ${mon}., ${year} | ${hours}:${minutes}${ampm}`;
+  };
+
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -265,7 +304,7 @@ export default function Dashboard() {
             <p className="text-[12px] text-muted-foreground">Last login 15th Sep 2025 • 09:47am</p>
             <p className="mt-2 text-[12px] text-muted-foreground">Send , Save, Visit our marketplace, anytime.</p>
           </div>
-          <Button variant="outline" className="h-9 px-4">
+          <Button variant="outline" className="h-9 px-4 hover:bg-[#1DD3B0] hover:text-white" onClick={() => window.location.assign('/data-import')}>
             Data Import
           </Button>
         </div>
@@ -328,27 +367,20 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            <div className="bg-white/50 p-4 rounded-lg">
+            <div className="bg-white p-4 rounded-lg">
               <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={depositData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="month" stroke="#6B7280" />
-                  <YAxis stroke="#6B7280" />
-                  <Tooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="deposit"
-                    stroke="#3C1642"
-                    strokeWidth={2}
-                    dot={{ fill: "#3C1642" }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="withdrawal"
-                    stroke="#8B5CF6"
-                    strokeWidth={2}
-                    dot={{ fill: "#8B5CF6" }}
-                  />
+                <LineChart data={depositData} margin={{ top: 12, right: 12, bottom: 0, left: 0 }}>
+                  <CartesianGrid strokeDasharray="4 4" stroke="#E5E7EB" />
+                  <XAxis dataKey="month" tick={{ fill: '#6B7280', fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={formatNaira} tick={{ fill: '#9CA3AF', fontSize: 12 }} axisLine={false} tickLine={false} width={64} />
+                  <Tooltip formatter={(v: any) => formatNaira(Number(v))} labelStyle={{ color: '#6B7280' }} contentStyle={{ borderRadius: 8 }} />
+                  {/* Reference vertical line at September */}
+                  <ReferenceLine x="September" stroke="#CBD5E1" strokeDasharray="4 4" />
+                  {/* Lines */}
+                  <Line type="monotone" dataKey="deposit" stroke="#3C1642" strokeWidth={2.2} dot={{ r: 3, stroke: '#3C1642', fill: '#fff', strokeWidth: 2 }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="withdrawal" stroke="#10b981" strokeWidth={2} dot={{ r: 3, stroke: '#10b981', fill: '#fff', strokeWidth: 2 }} activeDot={{ r: 5 }} />
+                  {/* Peak label near July for withdrawal */}
+                  <ReferenceDot x="July" y={95000} r={0} isFront label={{ value: formatNaira(400000), position: 'top', fill: '#059669', fontSize: 11, offset: 15 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -374,21 +406,15 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            <div className="bg-white/50 p-4 rounded-lg">
+            <div className="bg-white p-4 rounded-lg">
               <ResponsiveContainer width="100%" height={250}>
-                <AreaChart data={contributionData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="month" stroke="#6B7280" />
-                  <YAxis stroke="#6B7280" />
-                  <Tooltip />
-                  <Area
-                    type="monotone"
-                    dataKey="amount"
-                    stroke="#EAB308"
-                    fill="rgba(234, 179, 8, 0.2)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
+                <LineChart data={contributionData} margin={{ top: 12, right: 12, bottom: 0, left: 0 }}>
+                  <CartesianGrid strokeDasharray="4 4" stroke="#E5E7EB" />
+                  <XAxis dataKey="month" tick={{ fill: '#6B7280', fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={formatNaira} tick={{ fill: '#9CA3AF', fontSize: 12 }} axisLine={false} tickLine={false} width={64} />
+                  <Tooltip formatter={(v: any) => formatNaira(Number(v))} labelStyle={{ color: '#6B7280' }} contentStyle={{ borderRadius: 8 }} />
+                  <Line type="monotone" dataKey="amount" stroke="#F59E0B" strokeWidth={2.2} dot={{ r: 3, stroke: '#F59E0B', fill: '#fff', strokeWidth: 2 }} activeDot={{ r: 5 }} />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
@@ -478,9 +504,29 @@ export default function Dashboard() {
                           {transaction.date}
                         </TableCell>
                         <TableCell>
-                          <Button variant="ghost" size="icon" className="hover:bg-transparent">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="hover:bg-transparent">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" sideOffset={6} className="w-40">
+                              <DropdownMenuItem className="text-[13px] font-medium text-blue-700">
+                                <Eye className="mr-2 h-4 w-4" />
+                                View All
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-[13px] font-medium text-emerald-600">
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-[13px] font-medium text-rose-600 focus:text-rose-700">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))
@@ -543,63 +589,74 @@ export default function Dashboard() {
 
           {/* Recent Activity - Right Side (1/3 width) */}
           <div className="w-full lg:w-1/3">
-            <Card className="h-full p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold">Recent Activity</h3>
-                <Button variant="link" className="text-[#3C1642] p-0 h-auto">
-                  View All
-                </Button>
+            <Card className="h-full p-0">
+              {/* Header */}
+              <div className="px-4 sm:px-6 pt-4 pb-3 border-b">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium sm:text-base">Recent Activity</h3>
+                  <button className="inline-flex items-center text-xs sm:text-sm text-muted-foreground hover:text-foreground">
+                    {formatHeaderDate(now)}
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </button>
+                </div>
+                <div className="mt-3 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    value={activitySearch}
+                    onChange={(e) => setActivitySearch(e.target.value)}
+                    placeholder="Search"
+                    className="pl-9 h-9"
+                  />
+                </div>
               </div>
 
-              <div className="flex gap-2 mb-4 items-center">
-                <button className="p-1 hover:bg-gray-100 rounded">
-                  <ChevronDown className="h-4 w-4 rotate-90" />
-                </button>
-                <Button
-                  size="sm"
-                  className="text-white rounded-full px-4"
-                  style={{ backgroundColor: '#3C1642' }}
-                >
-                  Contributions
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="rounded-full px-4 hover:bg-[#1DD3B0] hover:text-white transition-colors"
-                >
-                  Charitable
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="rounded-full px-4 hover:bg-[#1DD3B0] hover:text-white transition-colors"
-                >
-                  Loans
-                </Button>
-                <button className="p-1 hover:bg-gray-100 rounded">
-                  <ChevronDown className="h-4 w-4 -rotate-90" />
-                </button>
-              </div>
 
-              <div className="space-y-4">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={activity.avatar} alt={activity.name} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                        {activity.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{activity.name}</p>
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className="text-green-600 font-medium">₦150,000.00</span>
-                        <span className="text-muted-foreground">25 Sep, 25 | 6:20am</span>
-                      </div>
-                    </div>
-                  </div>
+              {/* Pills actual */}
+              <div className="px-4 sm:px-6 py-2 flex items-center gap-2">
+                {["Contributions","Charitable","Loans"].map((tab) => (
+                  <Button
+                    key={tab}
+                    size="sm"
+                    variant={activityTab === tab ? "default" : "outline"}
+                    className={`rounded-full px-4 ${activityTab === tab ? "bg-[#3C1642] text-white" : ""}`}
+                    onClick={() => setActivityTab(tab)}
+                  >
+                    {tab}
+                  </Button>
                 ))}
               </div>
+
+              {/* List */}
+              <ScrollArea className="h-[420px]">
+                <div className="px-4 sm:px-6 py-2">
+                  {recentActivity
+                    .filter((a) =>
+                      !activitySearch || a.name.toLowerCase().includes(activitySearch.toLowerCase())
+                    )
+                    .map((activity, index) => (
+                      <div key={index} className="flex items-start gap-3 py-3 border-b last:border-b-0">
+                        <Avatar className="h-9 w-9 mt-0.5">
+                          <AvatarImage src={activity.avatar} alt={activity.name} />
+                          <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
+                            {activity.name.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className="truncate text-sm">
+                              <button className="text-[#3C1642] hover:underline font-medium mr-1">{activity.name}</button>
+                              <span className="text-muted-foreground">| {activity.action}</span>
+                            </p>
+                          </div>
+                          <div className="mt-1 flex items-center gap-3 text-xs">
+                            <span className="text-emerald-600 font-semibold">₦150,000.00</span>
+                            <span className="text-muted-foreground">25 Sep, 25 | 6:20am</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </ScrollArea>
             </Card>
           </div>
         </div>
