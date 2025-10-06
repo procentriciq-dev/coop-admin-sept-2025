@@ -10,7 +10,7 @@ export function BulkActionDropdown() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="hover:bg-transparent">
           Bulk Action <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </PopoverTrigger>
@@ -20,17 +20,17 @@ export function BulkActionDropdown() {
             Menu actions
           </h4>
           
-          <button className="w-full flex items-center gap-3 px-2 py-2 text-sm hover:bg-accent rounded-md transition-colors">
+          <button className="w-full flex items-center gap-3 px-2 py-2 text-sm hover:bg-accent/40 rounded-md transition-colors">
             <EyeOff className="h-4 w-4" />
             <span>View All</span>
           </button>
           
-          <button className="w-full flex items-center gap-3 px-2 py-2 text-sm text-[#10b981] hover:bg-accent rounded-md transition-colors">
+          <button className="w-full flex items-center gap-3 px-2 py-2 text-sm text-[#10b981] hover:bg-accent/40 rounded-md transition-colors">
             <Edit2 className="h-4 w-4" />
             <span>Edit</span>
           </button>
           
-          <button className="w-full flex items-center gap-3 px-2 py-2 text-sm text-destructive hover:bg-accent rounded-md transition-colors">
+          <button className="w-full flex items-center gap-3 px-2 py-2 text-sm text-destructive hover:bg-accent/40 rounded-md transition-colors">
             <Trash2 className="h-4 w-4" />
             <span>Delete</span>
           </button>

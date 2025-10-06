@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Popover,
   PopoverContent,
@@ -17,7 +17,12 @@ const filterOptions = [
   { id: "new-added", label: "New Added", defaultChecked: false },
 ];
 
-export function FilterDropdown() {
+type FilterDropdownProps = {
+  value?: Record<string, boolean>;
+  onChange?: (value: Record<string, boolean>) => void;
+};
+
+export function FilterDropdown({ value, onChange }: FilterDropdownProps) {
   const [filters, setFilters] = useState(
     filterOptions.reduce((acc, option) => {
       acc[option.id] = option.defaultChecked;
@@ -25,6 +30,10 @@ export function FilterDropdown() {
     }, {} as Record<string, boolean>)
   );
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (value) setFilters(value);
+  }, [value]);
 
   const filteredOptions = filterOptions.filter((option) =>
     option.label.toLowerCase().includes(searchQuery.toLowerCase())
@@ -53,8 +62,11 @@ export function FilterDropdown() {
                 <Checkbox
                   id={option.id}
                   checked={filters[option.id]}
-                  onCheckedChange={(checked) =>
-                    setFilters({ ...filters, [option.id]: !!checked })
+                  onCheckedChange={(checked) => {
+                    const updated = { ...filters, [option.id]: !!checked };
+                    setFilters(updated);
+                    onChange?.(updated);
+                  }
                   }
                 />
                 <Label

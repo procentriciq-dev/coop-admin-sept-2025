@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Popover,
   PopoverContent,
@@ -29,8 +29,14 @@ const dateRanges = [
   { id: "custom", label: "Custom Range", date: "" },
 ];
 
-export function SortByDropdown() {
-  const [sortBy, setSortBy] = useState("date");
+type SortByDropdownProps = {
+  value?: string;
+  onChange?: (value: string) => void;
+  onDateRangeChange?: (range: { from?: Date; to?: Date } | null) => void;
+};
+
+export function SortByDropdown({ value, onChange, onDateRangeChange }: SortByDropdownProps) {
+  const [sortBy, setSortBy] = useState(value ?? "date");
   const [showDateSubmenu, setShowDateSubmenu] = useState(false);
   const [selectedDateRange, setSelectedDateRange] = useState("today");
   const [showCalendar, setShowCalendar] = useState(false);
@@ -42,8 +48,13 @@ export function SortByDropdown() {
     to: undefined,
   });
 
+  useEffect(() => {
+    if (value && value !== sortBy) setSortBy(value);
+  }, [value]);
+
   const handleSortChange = (value: string) => {
     setSortBy(value);
+    onChange?.(value);
     if (value === "date") {
       setShowDateSubmenu(true);
     } else {
@@ -57,6 +68,7 @@ export function SortByDropdown() {
       setShowCalendar(true);
     } else {
       setShowCalendar(false);
+      onDateRangeChange?.(null);
     }
   };
 
@@ -143,7 +155,10 @@ export function SortByDropdown() {
               <Calendar
                 mode="range"
                 selected={dateRange}
-                onSelect={(range: any) => setDateRange(range)}
+                onSelect={(range: any) => {
+                  setDateRange(range);
+                  onDateRangeChange?.(range);
+                }}
                 className="rounded-md border pointer-events-auto"
               />
               
@@ -154,6 +169,7 @@ export function SortByDropdown() {
                   onClick={() => {
                     setShowCalendar(false);
                     setDateRange({ from: undefined, to: undefined });
+                    onDateRangeChange?.(null);
                   }}
                 >
                   REMOVE

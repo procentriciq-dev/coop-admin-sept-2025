@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Wallet,
   Users,
   Banknote,
@@ -9,6 +11,9 @@ import { Wallet,
   TrendingUp,
   MoreHorizontal,
   ChevronDown,
+  Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   LineChart,
@@ -30,21 +35,27 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { SortByDropdown } from "@/components/SortByDropdown";
+import { FilterDropdown } from "@/components/FilterDropdown";
+
 const MetricCard = ({ title, value, change, changeType, icon, iconBgColor }) => (
-  <Card className="p-6">
+  <Card className="p-4 border rounded-lg">
     <div className="flex items-start justify-between">
-      <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">{title}</p>
-        <p className="text-2xl font-bold">{value}</p>
-        <div className="flex items-center gap-1">
-          <span className={`text-sm ${changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
+      <div className="flex items-center justify-center h-9 w-9 rounded-md" style={{ backgroundColor: 'transparent' }}>
+        <div className={`p-2 rounded-md ${iconBgColor}`}>{icon}</div>
+      </div>
+      <div className="ml-3 flex-1">
+        <p className="text-[13px] text-muted-foreground">{title}</p>
+        <div className="mt-1 flex items-center gap-2">
+          <p className="text-xl font-semibold">{value}</p>
+          <span
+            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+              changeType === 'positive' ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-600'
+            }`}
+          >
             {change}
           </span>
-          <span className="text-xs text-muted-foreground">vs last month</span>
         </div>
-      </div>
-      <div className={`p-3 rounded-lg ${iconBgColor}`}>
-        {icon}
       </div>
     </div>
   </Card>
@@ -68,7 +79,7 @@ const contributionData = [
   { month: "September", amount: 150000 },
 ];
 
-const recentTransactions = [
+const allTransactions = [
   {
     id: "SG3345672",
     name: "Grace Molero",
@@ -97,6 +108,13 @@ const recentTransactions = [
     date: "25 Jan, 10:40 PM",
     type: "Membership ID",
   },
+  ...Array.from({ length: 28 }).map((_, i) => ({
+    id: `ID${i + 1000}`,
+    name: i % 2 === 0 ? "Ronald Richards" : "Chelsie Johnson",
+    amount: `₦${(100000 + i * 1234).toLocaleString()}.00`,
+    date: "12 Oct, 10:40 PM",
+    type: i % 3 === 0 ? "Contribution" : "Membership ID",
+  })),
 ];
 
 const recentActivity = [
@@ -141,11 +159,19 @@ const recentActivity = [
     action: "Contribution",
     time: "10 hours ago",
     avatar: "/7.png",
-  },
+  }
 ];
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Contributions");
+  const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [selectedMonth, setSelectedMonth] = useState("January");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("date");
+  const [filters, setFilters] = useState<Record<string, boolean>>({});
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date } | null>(null);
 
   const tabs = [
     "Contributions",
@@ -155,51 +181,127 @@ export default function Dashboard() {
     "Loans"
   ];
 
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const handleMonthChange = (month) => {
+    setSelectedMonth(month);
+  };
+
+  const toggleRowSelection = (index) => {
+    setSelectedRows(prev => 
+      prev.includes(index) 
+        ? prev.filter(i => i !== index)
+        : [...prev, index]
+    );
+  };
+
+  const toggleAllRows = (visibleCount: number) => {
+    if (selectedRows.length === visibleCount) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(Array.from({ length: visibleCount }).map((_, index) => index));
+    }
+  };
+
+  const normalized = (s: string) => s.toLowerCase();
+  
+  // Filter transactions based on search query and filters
+  const filtered = allTransactions.filter((t) => {
+    const matchesSearch =
+      !searchQuery ||
+      normalized(t.name).includes(normalized(searchQuery)) ||
+      normalized(t.id).includes(normalized(searchQuery));
+    
+    // Apply type filters if any are active
+    const typeFilterActive = Object.values(filters).some(Boolean);
+    const matchesFilter = !typeFilterActive || filters[t.type] || false;
+    
+    return matchesSearch && matchesFilter;
+  });
+
+  // Sort transactions based on selected sort option
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === "name") return a.name.localeCompare(b.name);
+    if (sortBy === "id") return a.id.localeCompare(b.id);
+    if (sortBy === "date") return a.date.localeCompare(b.date);
+    if (sortBy === "amount") {
+      const amountA = parseFloat(a.amount.replace(/[^\d.]/g, ''));
+      const amountB = parseFloat(b.amount.replace(/[^\d.]/g, ''));
+      return amountA - amountB;
+    }
+    return 0;
+  });
+
+  // Calculate pagination
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const current = Math.min(currentPage, totalPages);
+  const start = (current - 1) * pageSize;
+  const pageItems = sorted.slice(start, start + pageSize);
+  const visibleCount = pageItems.length;
+
+  const filtersKey = JSON.stringify(filters);
+  const dateRangeKey = JSON.stringify(dateRange);
+
+  useEffect(() => {
+    // Reset to first page when any controlling filter changes
+    setCurrentPage(1);
+    setSelectedRows([]);
+  }, [searchQuery, sortBy, filtersKey, dateRangeKey, pageSize]);
+
+  // Reset selected rows when page changes
+  useEffect(() => {
+    setSelectedRows([]);
+  }, [currentPage]);
+
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Welcome Jay Hargudson</h1>
-          <p className="text-muted-foreground">
-            Sunday, 19 January 2024 8:14:32PM
-          </p>
-          <p className="text-muted-foreground">
-            Good day, You can view your workspace, anytime
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">Welcome Jay Hargudson 👌🏽</h1>
+            <p className="text-[12px] text-muted-foreground">Last login 15th Sep 2025 • 09:47am</p>
+            <p className="mt-2 text-[12px] text-muted-foreground">Send , Save, Visit our marketplace, anytime.</p>
+          </div>
+          <Button variant="outline" className="h-9 px-4">
+            Data Import
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCard
-            title="Cooperative Balance"
+            title="Contribution Balance"
             value="₦100,204,500"
             change="+8%"
             changeType="positive"
-            icon={<Wallet className="h-6 w-6 text-primary" />}
-            iconBgColor="bg-primary/10"
+            icon={<Wallet className="h-4 w-4 text-[#3C1642]" />}
+            iconBgColor="bg-[#3C1642]/10"
           />
           <MetricCard
             title="Total Member"
             value="24000"
             change="+8%"
             changeType="positive"
-            icon={<Users className="h-6 w-6 text-secondary" />}
-            iconBgColor="bg-secondary/10"
+            icon={<Users className="h-4 w-4 text-[#10b981]" />}
+            iconBgColor="bg-emerald-100"
           />
           <MetricCard
             title="Total Loan"
             value="₦243,400,500"
             change="+8%"
             changeType="negative"
-            icon={<Banknote className="h-6 w-6 text-yellow-600" />}
-            iconBgColor="bg-yellow-100"
+            icon={<Banknote className="h-4 w-4 text-[#3b82f6]" />}
+            iconBgColor="bg-blue-100"
           />
           <MetricCard
             title="Pending Loans"
             value="₦200,000.00"
             change="+8%"
             changeType="positive"
-            icon={<Clock className="h-6 w-6 text-red-600" />}
-            iconBgColor="bg-red-100"
+            icon={<Clock className="h-4 w-4 text-[#ef4444]" />}
+            iconBgColor="bg-rose-100"
           />
         </div>
 
@@ -209,9 +311,22 @@ export default function Dashboard() {
               <h3 className="text-lg font-semibold">
                 Total Deposit & Withdrawal
               </h3>
-              <Button variant="outline" size="sm">
-                Month <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
+              <div className="relative group">
+                <Button variant="outline" size="sm" className="hover:bg-transparent group/month">
+                  {selectedMonth} <ChevronDown className="ml-2 h-4 w-4 group-hover/month:text-foreground" />
+                </Button>
+                <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg py-1 z-50 hidden group-hover:block border border-gray-100">
+                  {months.map((month) => (
+                    <button
+                      key={month}
+                      onClick={() => setSelectedMonth(month)}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      {month}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="bg-white/50 p-4 rounded-lg">
               <ResponsiveContainer width="100%" height={250}>
@@ -242,9 +357,22 @@ export default function Dashboard() {
           <div className="bg-transparent p-0">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold">Monthly Contribution</h3>
-              <Button variant="outline" size="sm">
-                Month <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
+              <div className="relative group">
+                <Button variant="outline" size="sm" className="hover:bg-transparent group/month">
+                  {selectedMonth} <ChevronDown className="ml-2 h-4 w-4 group-hover/month:text-foreground" />
+                </Button>
+                <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg py-1 z-50 hidden group-hover:block border border-gray-100">
+                  {months.map((month) => (
+                    <button
+                      key={month}
+                      onClick={() => setSelectedMonth(month)}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      {month}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="bg-white/50 p-4 rounded-lg">
               <ResponsiveContainer width="100%" height={250}>
@@ -292,29 +420,36 @@ export default function Dashboard() {
             </div>
             <Card className="p-6">
               <div className="mb-4 flex items-center justify-between">
-                <h4 className="font-medium">Recent {activeTab}</h4>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="hover:bg-[#1DD3B0] hover:text-white transition-colors"
-                  >
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    Filters
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="hover:bg-[#1DD3B0] hover:text-white transition-colors"
-                  >
-                    Sort By <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
+                <div>
+                  <h4 className="font-medium">Recent {activeTab}</h4>
+                  <p className="text-sm text-muted-foreground">Manage your reports</p>
+                </div>
+                <div className="flex gap-2 items-center">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 w-64"
+                    />
+                  </div>
+                  <FilterDropdown value={filters} onChange={setFilters} />
+                  <SortByDropdown value={sortBy} onChange={setSortBy} onDateRangeChange={setDateRange} />
                 </div>
               </div>
 
               <Table>
                 <TableHeader>
                   <TableRow className="bg-[#3C1642] hover:bg-[#3C1642]">
+                    <TableHead className="text-white w-12">
+                      <Checkbox
+                        checked={selectedRows.length === visibleCount && visibleCount > 0}
+                        onCheckedChange={() => toggleAllRows(visibleCount)}
+                        className="border-white data-[state=checked]:bg-white data-[state=checked]:text-[#3C1642]"
+                      />
+                    </TableHead>
                     <TableHead className="text-white">Membership ID</TableHead>
                     <TableHead className="text-white">Name</TableHead>
                     <TableHead className="text-white">Amount</TableHead>
@@ -323,29 +458,85 @@ export default function Dashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {recentTransactions.map((transaction, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">{transaction.id}</TableCell>
-                      <TableCell>{transaction.name}</TableCell>
-                      <TableCell>{transaction.amount}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {transaction.date}
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
+                  {pageItems.length > 0 ? (
+                    pageItems.map((transaction, index) => (
+                      <TableRow 
+                        key={`${transaction.id}-${index}`}
+                        className="transition-colors cursor-pointer hover:bg-transparent"
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedRows.includes(index)}
+                            onCheckedChange={() => toggleRowSelection(index)}
+                            className="data-[state=checked]:bg-[#1DD3B0] data-[state=checked]:border-[#1DD3B0]"
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">{transaction.id}</TableCell>
+                        <TableCell>{transaction.name}</TableCell>
+                        <TableCell>{transaction.amount}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {transaction.date}
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" className="hover:bg-transparent">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        No transactions found matching your filters.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
 
-              <div className="flex items-center justify-center gap-2 mt-4">
-                <Button variant="outline" size="sm">
-                  Show more
-                </Button>
-                <span className="text-sm text-muted-foreground">10 rows</span>
+              <div className="flex items-center justify-between mt-6">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Show rows:</span>
+                  <select
+                    className="h-8 border rounded-md px-2"
+                    value={pageSize}
+                    onChange={(e) => {
+                      const newPageSize = parseInt(e.target.value, 10);
+                      setPageSize(newPageSize);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    {[5, 10, 20, 50].map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                  <span className="text-sm text-muted-foreground ml-2">
+                    Showing {start + 1}-{Math.min(start + pageSize, sorted.length)} of {sorted.length} results
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    className="h-8 w-8"
+                    disabled={current === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    className="h-8 w-8"
+                    disabled={current === totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground ml-2">Page {current} of {totalPages}</span>
+                </div>
               </div>
             </Card>
           </div>
