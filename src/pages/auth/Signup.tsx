@@ -257,13 +257,41 @@ export default function Signup() {
               {isLoading ? 'Creating account...' : 'Create Account'}
             </Button>
 
-            <div className="text-center text-sm">
-              Already have an account?{' '}
-              <Link to="/login" className="text-[#1DD3B0] hover:underline font-medium">
-                Log in
-              </Link>
+            </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
             </div>
-          </form>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            <a
+              href="http://localhost:3001/auth/google"
+              style={{ textDecoration: 'none' }}
+            >
+              <Button variant="outline" type="button" disabled={isLoading} style={{ width: '100%' }}>
+                <svg className="mr-2 h-4 w-4" viewBox="0 0 488 512" width="20" height="20">
+                  <path fill="#4285F4" d="M488 261.8C488 403.3 391.1 504 245.6 504 109.7 504 8 402.3 8 266.4c0-135.9 101.7-246.4 237.6-246.4 73.2 0 137.2 30.2 182.9 78.3l-74.2 71C317.9 123.2 284 107.3 245.6 107.3c-78.5 0-142.2 64-142.2 143.1s63.7 143.1 142.2 143.1c90.4 0 124.6-64.9 129.8-98.6H245.6v-80.3h242.4c2.3 13.4 3.7 27.2 3.7 46.2z"/>
+                  <path fill="#34A853" d="M245.6 504c66 0 121.5-21.7 162.1-58.6l-79.5-65.2c-22.7 15.1-51.7 23.5-82.6 23.5C163.2 403.7 99.5 349.3 80.1 290.9l-81.7 63.3C32.6 435.6 130.3 504 245.6 504z"/>
+                  <path fill="#FBBC05" d="M80.1 290.9C73.2 272.7 69.2 252.6 69.2 231.6s3.9-41.1 10.8-59.3l-81.7-63.3C13.6 153.3 8 208 8 266.4c0 58.4 5.6 113.1 69.2 154.5l81.7-63.3c-17.5-23-27.6-52.1-27.6-85.8z"/>
+                  <path fill="#EA4335" d="M245.6 107.3c42 0 70.1 18 86.2 33.2l64.5-63.1C375.5 34.8 318.8 8 245.6 8 130.3 8 32.6 76.4 10.9 229l81.7 63.3c19.4-58.4 83.1-112.8 153-112.8z"/>
+                </svg>
+                Google
+              </Button>
+            </a>
+          </div>
+          <div className="text-center text-sm mt-4">
+            Already have an account?{' '}
+            <Link to="/login" className="text-[#1DD3B0] hover:underline font-medium">
+              Log in
+            </Link>
+          </div>
         </div>
       </div>
     </div>
